@@ -1,0 +1,5 @@
+# Common Playbook
+
+## Variables
+
+

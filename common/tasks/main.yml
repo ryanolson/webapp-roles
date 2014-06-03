@@ -1,0 +1,48 @@
+---
+  - name: ensure ssh-agent works with sudo
+    lineinfile: dest=/etc/sudoers state=present
+                regexp='^Defaults env_keep\+\=SSH_AUTH_SOCK'
+                line='Defaults env_keep+=SSH_AUTH_SOCK'
+
+  - name: update apt package cache
+    apt: update_cache=yes cache_valid_time=86400
+
+  - name: install python-software-properties
+    apt: pkg=python-software-properties state=present
+
+  - name: install git and python
+    apt: pkg={{item}} state=installed
+    with_items:
+      - build-essential
+      - git-core
+      - python-dev
+      - python-setuptools
+
+  - name: install pip
+    easy_install: name=pip
+
+  - name: install/upgrade essential python packages
+    pip: name={{item}} state=latest
+    with_items:
+      - pip
+      - setuptools
+      - virtualenv
+      - supervisor
+    notify:
+      - restart supervisor
+
+  - name: create directory for supervior app scripts
+    file: path=/etc/supervisor state=directory
+
+  - name: install supervisord configuration
+    copy: src=etc/supervisord.conf dest=/etc/supervisord.conf
+    notify:
+      - restart supervisor
+
+  - name: create upstart script for supervisor
+    copy: src=init/supervisor.conf dest=/etc/init/supervisor.conf
+    notify:
+      - restart supervisor
+
+  - name: start supervisor
+    service: name=supervisor state=started

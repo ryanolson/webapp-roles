@@ -1,0 +1,14 @@
+---
+  - name: create webapps directory [{{app_path}}]
+    file: path={{app_path}} state=directory recurse=yes
+
+  - name: install database clients
+    apt: pkg={{item}} state=installed
+    with_items:
+      - libpq-dev
+      - libmysqlclient-dev
+      - libxml2-dev
+      - mysql-client
+
+  - name: install uwsgi
+    pip: name=uwsgi state=latest
